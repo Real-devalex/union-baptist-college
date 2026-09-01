@@ -188,6 +188,7 @@ export interface StudentRow {
   gender: Gender
   date_of_birth: string | null
   admission_session_id: string
+  login_pin: string | null
   is_active: boolean
   created_at: string
   updated_at: string
@@ -203,6 +204,7 @@ export interface StudentInsert {
   gender: Gender
   date_of_birth?: string | null
   admission_session_id: string
+  login_pin?: string | null
   is_active?: boolean
   created_at?: string
   updated_at?: string
@@ -218,6 +220,7 @@ export interface StudentUpdate {
   gender?: Gender
   date_of_birth?: string | null
   admission_session_id?: string
+  login_pin?: string | null
   is_active?: boolean
   updated_at?: string
 }
@@ -225,8 +228,10 @@ export interface StudentUpdate {
 export interface ParentProfileRow {
   id: string
   user_id: string
+  parent_id: string | null
   phone: string | null
   occupation: string | null
+  login_pin: string | null
   created_at: string
   updated_at: string
 }
@@ -234,8 +239,10 @@ export interface ParentProfileRow {
 export interface ParentProfileInsert {
   id?: string
   user_id: string
+  parent_id?: string | null
   phone?: string | null
   occupation?: string | null
+  login_pin?: string | null
   created_at?: string
   updated_at?: string
 }
@@ -243,8 +250,10 @@ export interface ParentProfileInsert {
 export interface ParentProfileUpdate {
   id?: string
   user_id?: string
+  parent_id?: string | null
   phone?: string | null
   occupation?: string | null
+  login_pin?: string | null
   updated_at?: string
 }
 
@@ -793,6 +802,62 @@ export interface AuditLogUpdate {
   reason?: string | null
   ip_address?: string | null
   user_agent?: string | null
+}
+
+export interface AdmissionApplicationRow {
+  id: string
+  applicant_name: string
+  applicant_email: string | null
+  applicant_phone: string | null
+  student_first_name: string
+  student_middle_name: string | null
+  student_surname: string
+  student_gender: Gender
+  student_date_of_birth: string | null
+  parent_name: string
+  parent_email: string | null
+  parent_phone: string
+  parent_occupation: string | null
+  desired_class_level: string
+  previous_school: string | null
+  documents_url: string | null
+  status: 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'ENROLLED'
+  reviewed_by: string | null
+  reviewed_at: string | null
+  rejection_reason: string | null
+  student_id: string | null
+  admission_number: string | null
+  user_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface AdmissionApplicationInsert {
+  id?: string
+  applicant_name: string
+  applicant_email?: string | null
+  applicant_phone?: string | null
+  student_first_name: string
+  student_middle_name?: string | null
+  student_surname: string
+  student_gender: Gender
+  student_date_of_birth?: string | null
+  parent_name: string
+  parent_email?: string | null
+  parent_phone: string
+  parent_occupation?: string | null
+  desired_class_level: string
+  previous_school?: string | null
+  documents_url?: string | null
+  status?: string
+  reviewed_by?: string | null
+  reviewed_at?: string | null
+  rejection_reason?: string | null
+  student_id?: string | null
+  admission_number?: string | null
+  user_id?: string | null
+  created_at?: string
+  updated_at?: string
 }
 
 export interface SchoolSettingsRow {

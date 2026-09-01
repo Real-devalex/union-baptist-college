@@ -3,18 +3,15 @@ import { supabase } from '@/lib/supabase'
 import { StatCard } from '@/components/ui/Card'
 import { Card, CardContent, CardTitle } from '@/components/ui/Card'
 import {
-  Users,
-  GraduationCap,
-  BookOpen,
-  School,
-  ClipboardList,
-  FileText,
+  Users, GraduationCap, BookOpen, School, Calendar, Star,
+  ClipboardCheck, Shield, BarChart3, FileText, ClipboardList,
 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 interface DashboardStats {
   totalStudents: number
   totalTeachers: number
-  totalClasses: number
+  totalClassArms: number
   totalSubjects: number
   currentSession: string
   currentTerm: string
@@ -22,100 +19,83 @@ interface DashboardStats {
   submittedResults: number
   approvedResults: number
   publishedResults: number
+  pendingApplications: number
+  totalUsers: number
 }
 
 export default function SuperAdminDashboard() {
   const [stats, setStats] = useState<DashboardStats>({
-    totalStudents: 0,
-    totalTeachers: 0,
-    totalClasses: 0,
-    totalSubjects: 0,
-    currentSession: '—',
-    currentTerm: '—',
-    draftResults: 0,
-    submittedResults: 0,
-    approvedResults: 0,
-    publishedResults: 0,
+    totalStudents: 0, totalTeachers: 0, totalClassArms: 0, totalSubjects: 0,
+    currentSession: '—', currentTerm: '—',
+    draftResults: 0, submittedResults: 0, approvedResults: 0, publishedResults: 0,
+    pendingApplications: 0, totalUsers: 0,
   })
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadStats()
-  }, [])
+  useEffect(() => { loadStats() }, [])
 
   async function loadStats() {
-    try {
-      const [
-        { count: students },
-        { count: teachers },
-        { count: classes },
-        { count: subjects },
-        { data: session },
-        { data: term },
-        { count: draft },
-        { count: submitted },
-        { count: approved },
-        { count: published },
-      ] = await Promise.all([
-        supabase.from('students').select('*', { count: 'exact', head: true }),
-        supabase.from('teacher_profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('class_arms').select('*', { count: 'exact', head: true }),
-        supabase.from('subjects').select('*', { count: 'exact', head: true }),
-        supabase.from('academic_sessions').select('name').eq('is_current', true).single(),
-        supabase.from('terms').select('name').eq('is_current', true).single(),
-        supabase.from('assessment_results').select('*', { count: 'exact', head: true }).eq('status', 'DRAFT'),
-        supabase.from('assessment_results').select('*', { count: 'exact', head: true }).eq('status', 'SUBMITTED'),
-        supabase.from('assessment_results').select('*', { count: 'exact', head: true }).eq('status', 'APPROVED'),
-        supabase.from('assessment_results').select('*', { count: 'exact', head: true }).eq('status', 'PUBLISHED'),
-      ])
+    const [
+      { count: students }, { count: teachers }, { count: arms }, { count: subjects },
+      { data: session }, { data: term },
+      { count: draft }, { count: submitted }, { count: approved }, { count: published },
+      { count: pending }, { count: users },
+    ] = await Promise.all([
+      supabase.from('students').select('*', { count: 'exact', head: true }),
+      supabase.from('teacher_profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('class_arms').select('*', { count: 'exact', head: true }),
+      supabase.from('subjects').select('*', { count: 'exact', head: true }),
+      supabase.from('academic_sessions').select('name').eq('is_current', true).single(),
+      supabase.from('terms').select('name').eq('is_current', true).single(),
+      supabase.from('assessment_results').select('*', { count: 'exact', head: true }).eq('status', 'DRAFT'),
+      supabase.from('assessment_results').select('*', { count: 'exact', head: true }).eq('status', 'SUBMITTED'),
+      supabase.from('assessment_results').select('*', { count: 'exact', head: true }).eq('status', 'APPROVED'),
+      supabase.from('assessment_results').select('*', { count: 'exact', head: true }).eq('status', 'PUBLISHED'),
+      supabase.from('admission_applications').select('*', { count: 'exact', head: true }).eq('status', 'PENDING'),
+      supabase.from('users').select('*', { count: 'exact', head: true }),
+    ])
 
-      setStats({
-        totalStudents: students || 0,
-        totalTeachers: teachers || 0,
-        totalClasses: classes || 0,
-        totalSubjects: subjects || 0,
-        currentSession: session?.name || '—',
-        currentTerm: term?.name || '—',
-        draftResults: draft || 0,
-        submittedResults: submitted || 0,
-        approvedResults: approved || 0,
-        publishedResults: published || 0,
-      })
-    } catch (error) {
-      console.error('Error loading stats:', error)
-    } finally {
-      setLoading(false)
-    }
+    setStats({
+      totalStudents: students || 0, totalTeachers: teachers || 0,
+      totalClassArms: arms || 0, totalSubjects: subjects || 0,
+      currentSession: session?.name || '—', currentTerm: term?.name?.replace('_', ' ') || '—',
+      draftResults: draft || 0, submittedResults: submitted || 0,
+      approvedResults: approved || 0, publishedResults: published || 0,
+      pendingApplications: pending || 0, totalUsers: users || 0,
+    })
+    setLoading(false)
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    )
+    return <div className="flex items-center justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1e3a5f]" /></div>
   }
 
   return (
     <div className="space-y-6">
-      {/* Current Session Info */}
-      <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-        <div className="flex items-center gap-2">
-          <School className="w-5 h-5 text-primary" />
-          <span className="font-medium text-primary">Current Session:</span>
-          <span className="text-gray-900">{stats.currentSession}</span>
-          <span className="text-gray-400">|</span>
-          <span className="font-medium text-primary">Term:</span>
-          <span className="text-gray-900">{stats.currentTerm}</span>
-        </div>
+      {/* Session Info */}
+      <div className="bg-[#1e3a5f]/5 border border-[#1e3a5f]/20 rounded-lg p-4 flex items-center gap-3">
+        <Calendar className="w-5 h-5 text-[#1e3a5f]" />
+        <span className="font-medium text-[#1e3a5f]">Current Session:</span>
+        <span className="text-gray-900 dark:text-white">{stats.currentSession}</span>
+        <span className="text-gray-400">|</span>
+        <span className="font-medium text-[#1e3a5f]">Term:</span>
+        <span className="text-gray-900 dark:text-white">{stats.currentTerm}</span>
       </div>
 
-      {/* Stats Grid */}
+      {/* Primary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Students" value={stats.totalStudents} icon={<GraduationCap className="w-5 h-5" />} color="blue" />
         <StatCard label="Total Teachers" value={stats.totalTeachers} icon={<Users className="w-5 h-5" />} color="green" />
-        <StatCard label="Class Arms" value={stats.totalClasses} icon={<School className="w-5 h-5" />} color="yellow" />
+        <StatCard label="Class Arms" value={stats.totalClassArms} icon={<School className="w-5 h-5" />} color="yellow" />
         <StatCard label="Subjects" value={stats.totalSubjects} icon={<BookOpen className="w-5 h-5" />} color="purple" />
+      </div>
+
+      {/* Secondary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard label="System Users" value={stats.totalUsers} icon={<Shield className="w-5 h-5" />} color="gray" />
+        <StatCard label="Pending Admissions" value={stats.pendingApplications} icon={<ClipboardCheck className="w-5 h-5" />} color={stats.pendingApplications > 0 ? 'yellow' : 'gray'} />
+        <StatCard label="Published Results" value={stats.publishedResults} icon={<FileText className="w-5 h-5" />} color="green" />
+        <StatCard label="Submitted (Review)" value={stats.submittedResults} icon={<ClipboardList className="w-5 h-5" />} color="yellow" />
       </div>
 
       {/* Results Overview */}
@@ -152,27 +132,48 @@ export default function SuperAdminDashboard() {
         </div>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <a href="/super-admin/users" className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-              <Users className="w-5 h-5 text-primary" />
+            <Link to="/super-admin/users" className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+              <Users className="w-5 h-5 text-[#1e3a5f]" />
               <div>
                 <p className="font-medium text-gray-900">Manage Users</p>
                 <p className="text-xs text-gray-500">Create and manage accounts</p>
               </div>
-            </a>
-            <a href="/super-admin/classes" className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-              <School className="w-5 h-5 text-primary" />
+            </Link>
+            <Link to="/super-admin/admissions" className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+              <ClipboardCheck className="w-5 h-5 text-[#1e3a5f]" />
               <div>
-                <p className="font-medium text-gray-900">Manage Classes</p>
+                <p className="font-medium text-gray-900">Admissions</p>
+                <p className="text-xs text-gray-500">Review applications</p>
+              </div>
+            </Link>
+            <Link to="/super-admin/sessions" className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+              <Calendar className="w-5 h-5 text-[#1e3a5f]" />
+              <div>
+                <p className="font-medium text-gray-900">Sessions</p>
+                <p className="text-xs text-gray-500">Manage academic sessions</p>
+              </div>
+            </Link>
+            <Link to="/super-admin/grading" className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+              <Star className="w-5 h-5 text-[#1e3a5f]" />
+              <div>
+                <p className="font-medium text-gray-900">Grading Scale</p>
+                <p className="text-xs text-gray-500">Configure grade ranges</p>
+              </div>
+            </Link>
+            <Link to="/super-admin/classes" className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+              <School className="w-5 h-5 text-[#1e3a5f]" />
+              <div>
+                <p className="font-medium text-gray-900">Classes</p>
                 <p className="text-xs text-gray-500">Class levels and arms</p>
               </div>
-            </a>
-            <a href="/super-admin/subjects" className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-              <BookOpen className="w-5 h-5 text-primary" />
+            </Link>
+            <Link to="/super-admin/audit" className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
+              <Shield className="w-5 h-5 text-[#1e3a5f]" />
               <div>
-                <p className="font-medium text-gray-900">Manage Subjects</p>
-                <p className="text-xs text-gray-500">Subjects and assignments</p>
+                <p className="font-medium text-gray-900">Audit Logs</p>
+                <p className="text-xs text-gray-500">View system activity</p>
               </div>
-            </a>
+            </Link>
           </div>
         </CardContent>
       </Card>
