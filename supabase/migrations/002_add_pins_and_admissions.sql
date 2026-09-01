@@ -70,14 +70,14 @@ CREATE POLICY "Applicants can view own applications"
   ON admission_applications FOR SELECT
   USING (
     applicant_email = (SELECT email FROM auth.users WHERE id = auth.uid())
-    OR is_super_admin(auth.uid())
-    OR is_admin_or_principal(auth.uid())
+    OR is_super_admin()
+    OR is_admin_or_principal()
   );
 
 -- Only admin/principal can update applications
 CREATE POLICY "Admin and principal can update applications"
   ON admission_applications FOR UPDATE
-  USING (is_super_admin(auth.uid()) OR is_admin_or_principal(auth.uid()));
+  USING (is_super_admin() OR is_admin_or_principal());
 
 -- RLS policies for student login_pin access
 -- Students can read their own PIN (for PIN verification during login)
@@ -85,8 +85,8 @@ CREATE POLICY "Students can verify own PIN"
   ON students FOR SELECT
   USING (
     user_id = auth.uid()
-    OR is_super_admin(auth.uid())
-    OR is_admin_or_principal(auth.uid())
+    OR is_super_admin()
+    OR is_admin_or_principal()
   );
 
 -- RLS policies for parent login_pin access
@@ -94,8 +94,8 @@ CREATE POLICY "Parents can verify own PIN"
   ON parent_profiles FOR SELECT
   USING (
     user_id = auth.uid()
-    OR is_super_admin(auth.uid())
-    OR is_admin_or_principal(auth.uid())
+    OR is_super_admin()
+    OR is_admin_or_principal()
   );
 
 -- ============================================================
