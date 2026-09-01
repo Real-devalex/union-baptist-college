@@ -64,7 +64,7 @@ export default function AppLayout() {
 
   function handleSignOut() {
     signOut()
-    navigate('/login')
+    navigate('/')
   }
 
   return (

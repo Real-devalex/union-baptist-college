@@ -119,7 +119,7 @@ export function ProtectedRoute({ children, allowedRoles }: { children: ReactNode
     )
   }
 
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) return <Navigate to="/" replace />
 
   if (allowedRoles && user.profile && !allowedRoles.includes(user.profile.role)) {
     return <Navigate to={getDashboardPath(user.profile.role)} replace />
@@ -135,6 +135,6 @@ export function getDashboardPath(role: UserRole): string {
     case 'TEACHER': return '/teacher/dashboard'
     case 'STUDENT': return '/student/dashboard'
     case 'PARENT': return '/parent/dashboard'
-    default: return '/login'
+    default: return '/'
   }
 }
